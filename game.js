@@ -120,7 +120,7 @@ class Hero extends Fighter {
 
   // Attacks opponent. Same as Fighter attack function overridden with input.
 
-  attack() {
+  attack(opponent) {
 
     console.log("Choose your weapon by entering in the number of the weapon:");
 
@@ -232,8 +232,8 @@ function battle(hero, villian) {
 
   // Introductions
   console.log();
-  console.log(hero.greet());
-  console.log(villian.greet());
+  hero.greet();
+  villian.greet();
 
   // Variables
   let battling = true;
@@ -253,7 +253,7 @@ function battle(hero, villian) {
 
       if (victory) {
 
-        console.log(villian.destroy());
+        villian.destroy();
         console.log(`${hero.name} has won!\n`);
         battling = false;
         return true;
@@ -270,7 +270,7 @@ function battle(hero, villian) {
 
       if (victory) {
 
-        console.log(hero.destroy());
+        hero.destroy();
         console.log(`${villian.name} has won!\n`);
         battling = false;
         return false;
@@ -298,7 +298,7 @@ let fighting = true;
 
 while (fighting) {
 
-  let myVillian = new Villian({
+  let myVillian = new Fighter({
     createdAt: new Date(),
     dimensions: {
       length: 1,
