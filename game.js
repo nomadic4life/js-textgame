@@ -84,6 +84,11 @@ class Fighter extends Humanoid {
 
     super(obj);
 
+    // Status: Status of fighter
+    this.status = "NORMAL";
+    // statusTime: Number of turns fighter is affected by status
+    this.statusTime = 0;
+
   }
 
   // Attacks an opponent. Opponent must also be derivative of Fighter class. Returns whether attack resulted in a kill or not.
@@ -103,6 +108,23 @@ class Fighter extends Humanoid {
     }
 
     return opponent.takeDamage(damage);
+
+  }
+
+  setStatus(newStatus, time) {
+
+    /*
+
+    Possible statuses:
+
+    "NORMAL": normal
+    "STUNNED": cannot attack for n turns
+    "POISONED": Takes damage a bit for n turns
+
+    */
+
+    status = newStatus;
+    statusTime = time;
 
   }
 
@@ -249,7 +271,17 @@ function battle(hero, villian) {
 
     if (turn === 1) { // Hero's turn
 
-      let victory = hero.attack(villian);
+      let victory = false;
+
+      if (hero.status != "STUNNED")
+        victory = hero.attack(villian);
+
+      else {
+
+        console.log(`${hero.name} is stunned!`);
+        hero.statusTime--;
+
+      }
 
       if (victory) {
 
@@ -266,7 +298,17 @@ function battle(hero, villian) {
 
     else { // Villian's turn
 
-      let victory = villian.attack(hero);
+      let victory = false;
+
+      if (villian.status != "STUNNED")
+        victory = villian.attack(hero);
+
+      else {
+
+        console.log(`${villian.name} is stunned!`);
+        villian.statusTime--;
+
+      }
 
       if (victory) {
 
