@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A text-based adventure game written in JS using node.js",
   "main": "index.js",
+  "dependencies": {
+    "readline-sync": "^1.4.9"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node game.js"

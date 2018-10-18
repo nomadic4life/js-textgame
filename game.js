@@ -3,159 +3,163 @@
 // Allows reading from console in node.js
 const readline = require('readline-sync');
 
-// Object constructors
+// GameObject class - represents all Game Objects.
 
-// GameObject
+class GameObject {
 
-const GameObject = function(obj) {
+  constructor(obj) {
 
-  this.createdAt = obj.createdAt;
-  this.dimensions = obj.dimensions;
-
-}
-
-GameObject.prototype.destroy = function() {
-
-  return `${this.name} was removed from the game.`;
-
-}
-
-// CharacterStats
-
-const CharacterStats = function(obj) {
-
-  GameObject.call(this, obj);
-  this.hp = obj.hp;
-  this.name = obj.name;
-
-}
-
-CharacterStats.prototype = Object.create(GameObject.prototype);
-
-CharacterStats.prototype.takeDamage = function() {
-
-  return `${this.name} took damage.`;
-
-}
-
-// Humanoid
-
-const Humanoid = function(obj) {
-
-  CharacterStats.call(this, obj);
-  this.faction = obj.faction;
-  this.weapons = obj.weapons;
-  this.language = obj.language;
-
-}
-
-Humanoid.prototype = Object.create(CharacterStats.prototype);
-
-Humanoid.prototype.greet = function() {
-
-  return `${this.name} offers a greeting in ${this.language}`;
-
-}
-
-/* ====================== MY CONSTRUCTORS ============================ */
-
-// Fighter constructor, inherits from Humanoid
-
-const Fighter = function(obj) {
-
-  Humanoid.call(this, obj);
-
-}
-
-Fighter.prototype = Object.create(Humanoid.prototype);
-
-// Attack function. Takes in another fighter, returns whether the attack resulted in a death.
-Fighter.prototype.attack = function(opponent) {
-
-  let weapon = Math.floor(Math.random() * this.weapons.length);
-  let damage = Math.floor(Math.random() * this.weapons[weapon].maxDamage + 1);
-
-  this.weapons[weapon].uses--;
-
-  if (this.weapons[weapon].uses <= 0) {
-
-    this.weapons[weapon].uses = 0;
-    damage = 1;
+    this.createdAt = obj.createdAt;
+    this.dimensions = obj.dimensions;
+    this.name = obj.name;
 
   }
 
-  return opponent.takeDamage(damage);
+  // Removes object from game
 
-}
+  destroy() {
 
-// Applies damage to self, returns if self died
-Fighter.prototype.takeDamage = function(damage) {
-
-  console.log(CharacterStats.prototype.takeDamage.call(this));
-  this.hp -= damage;
-  console.log(`${this.name}'s current HP: ${this.hp}`);
-
-  return this.hp <= 0;
-
-}
-
-// Villian constructor, inherits from Fighter
-
-const Villian = function(obj) {
-
-  Fighter.call(this, obj);
-
-}
-
-Villian.prototype = Object.create(Fighter.prototype);
-
-// Hero constructor, inherits from Fighter
-
-const Hero = function(obj) {
-
-  Fighter.call(this, obj);
-
-}
-
-Hero.prototype = Object.create(Fighter.prototype);
-
-// Hero attack function, overwritten to allow user input
-Hero.prototype.attack = function(opponent) {
-
-  console.log("Choose your weapon by entering in the number of the weapon:");
-
-  for (let i = 0; i < this.weapons.length; i++) {
-
-    console.log(`[${i}] ${this.weapons[i].name} (remaining uses: ${this.weapons[i].uses})`);
+    console.log(`${this.name} was removed from the game.`);
 
   }
 
-  let chosenWeapon = -1;
+}
 
-  while (chosenWeapon == -1 || isNaN(chosenWeapon) || chosenWeapon > this.weapons.length - 1) {
+// Entity class - Represents all entities with HP.
 
-    chosenWeapon = readline.question("Weapon: ");
+class Entity extends GameObject {
 
-  }
+  constructor(obj) {
 
-  let damage = Math.floor(Math.random() * this.weapons[chosenWeapon].maxDamage + 1);
-
-  this.weapons[chosenWeapon].uses--;
-
-  if (this.weapons[chosenWeapon].uses <= 0) {
-
-    this.weapons[chosenWeapon].uses = 0;
-    damage = 1;
+    super(obj);
+    this.hp = obj.hp;
+    this.name = obj.name;
 
   }
 
-  console.log();
+  // Applies damage to self, returns if self is dead
 
-  return opponent.takeDamage(damage);
+  takeDamage(damage) {
+
+     console.log(`${this.name} took damage.`);
+     this.hp -= damage;
+     console.log(`${this.name}'s current HP: ${this.hp}`);
+
+     return this.hp <= 0;
+
+  }
+
+}
+
+// Humanoid class - represents all humanoids
+
+class Humanoid extends Entity {
+
+  constructor(obj) {
+
+    super(obj);
+    this.faction = obj.faction;
+    this.weapons = obj.weapons;
+    this.language = obj.language;
+
+  }
+
+  // Logs greeting
+
+  greet() {
+
+    console.log(`${this.name} offers a greeting in ${this.language}`);
+
+  }
+
+}
+
+/* ====================== MY CLASSES ============================ */
+
+// Fighter class, inherits from Humanoid
+
+class Fighter extends Humanoid {
+
+  constructor(obj) {
+
+    super(obj);
+
+  }
+
+  // Attacks an opponent. Opponent must also be derivative of Fighter class. Returns whether attack resulted in a kill or not.
+
+  attack(opponent) {
+
+    let weapon = Math.floor(Math.random() * this.weapons.length);
+    let damage = Math.floor(Math.random() * this.weapons[weapon].maxDamage + 1);
+
+    this.weapons[weapon].uses--;
+
+    if (this.weapons[weapon].uses <= 0) {
+
+      this.weapons[weapon].uses = 0;
+      damage = 1;
+
+    }
+
+    return opponent.takeDamage(damage);
+
+  }
+
+}
+
+// Hero class, inherits from Fighter
+
+class Hero extends Fighter {
+
+  constructor(obj) {
+
+    super(obj);
+
+  }
+
+  // Attacks opponent. Same as Fighter attack function overridden with input.
+
+  attack() {
+
+    console.log("Choose your weapon by entering in the number of the weapon:");
+
+    for (let i = 0; i < this.weapons.length; i++) {
+
+      console.log(`[${i}] ${this.weapons[i].name} (remaining uses: ${this.weapons[i].uses})`);
+
+    }
+
+    let chosenWeapon = -1;
+
+    while (chosenWeapon == -1 || isNaN(chosenWeapon) || chosenWeapon > this.weapons.length - 1) {
+
+      chosenWeapon = readline.question("Weapon: ");
+
+    }
+
+    let damage = Math.floor(Math.random() * this.weapons[chosenWeapon].maxDamage + 1);
+
+    this.weapons[chosenWeapon].uses--;
+
+    if (this.weapons[chosenWeapon].uses <= 0) {
+
+      this.weapons[chosenWeapon].uses = 0;
+      damage = 1;
+
+    }
+
+    console.log();
+
+    return opponent.takeDamage(damage);
+
+  }
 
 }
 
 /* ====================== GAME FUNCTIONS ============================ */
+
+// Returns a new character
 
 function createCharacter() {
 
@@ -221,6 +225,8 @@ function createCharacter() {
   });
 
 }
+
+// Battle function. returns whether hero won or not.
 
 function battle(hero, villian) {
 
