@@ -1,0 +1,19 @@
+{
+  "name": "js-textgame",
+  "version": "1.0.0",
+  "description": "A text-based adventure game written in JS using node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jheinz1999/js-textgame.git"
+  },
+  "author": "Jonny Heinz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jheinz1999/js-textgame/issues"
+  },
+  "homepage": "https://github.com/jheinz1999/js-textgame#readme"
+}
