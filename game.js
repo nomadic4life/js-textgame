@@ -84,25 +84,101 @@ class Fighter extends Humanoid {
 
     super(obj);
 
+    // Status: Status of fighter
+    this.status = "NORMAL";
+    // statusTime: Number of turns fighter is affected by status
+    this.statusTime = 0;
+
+  }
+
+  // extension of takeDamage function
+
+  takeDamage(damage) {
+
+    // If I am not afflicted with anything, then there is a 5% chance I will be stunned and a 10% chance I will be poisoned.
+
+    if (this.status == "NORMAL") {
+
+      const affliction = Math.floor(Math.random() * 100 + 1);
+
+      if (affliction < 5) {
+
+        this.setStatus("STUNNED", 1);
+
+      }
+
+      else if (affliction < 15) {
+
+        this.setStatus("POISONED", Math.floor(Math.random() * 4 + 1));
+
+      }
+
+    }
+
+    if (this.status == "POISONED") {
+
+      let damage = Math.floor(Math.random() * 9 + 1);
+      console.log(`${this.name} took ${damage} damage due to poison.`);
+
+      this.hp -= damage;
+      console.log(`${this.name}'s current HP: ${this.hp}`);
+
+      this.statusTime--;
+
+      if (this.statusTime == 0)
+        this.status = "NORMAL";
+
+    }
+
+    return super.takeDamage(damage);
+
   }
 
   // Attacks an opponent. Opponent must also be derivative of Fighter class. Returns whether attack resulted in a kill or not.
 
   attack(opponent) {
 
-    let weapon = Math.floor(Math.random() * this.weapons.length);
-    let damage = Math.floor(Math.random() * this.weapons[weapon].maxDamage + 1);
+    if (this.status != "STUNNED") {
 
-    this.weapons[weapon].uses--;
+      let weapon = Math.floor(Math.random() * this.weapons.length);
+      let damage = Math.floor(Math.random() * this.weapons[weapon].maxDamage + 1);
 
-    if (this.weapons[weapon].uses <= 0) {
+      this.weapons[weapon].uses--;
 
-      this.weapons[weapon].uses = 0;
-      damage = 1;
+      if (this.weapons[weapon].uses <= 0) {
+
+        this.weapons[weapon].uses = 0;
+        damage = 1;
+
+      }
+
+      return opponent.takeDamage(damage);
 
     }
 
-    return opponent.takeDamage(damage);
+    else {
+
+      io.output(`${this.name} is stunned!`);
+      return false;
+
+    }
+
+  }
+
+  setStatus(newStatus, time) {
+
+    /*
+
+    Possible statuses:
+
+    "NORMAL": normal
+    "STUNNED": cannot attack for n turns
+    "POISONED": Takes damage a bit for n turns
+
+    */
+
+    this.status = newStatus;
+    this.statusTime = time;
 
   }
 
@@ -122,36 +198,47 @@ class Hero extends Fighter {
 
   attack(opponent) {
 
-    io.output("Choose your weapon by entering in the number of the weapon:");
+    if (this.status != "STUNNED") {
 
-    for (let i = 0; i < this.weapons.length; i++) {
+      io.output("Choose your weapon by entering in the number of the weapon:");
 
-      io.output(`[${i}] ${this.weapons[i].name} (remaining uses: ${this.weapons[i].uses})`);
+      for (let i = 0; i < this.weapons.length; i++) {
+
+        io.output(`[${i}] ${this.weapons[i].name} (remaining uses: ${this.weapons[i].uses})`);
+
+      }
+
+      let chosenWeapon = -1;
+
+      while (chosenWeapon == -1 || isNaN(chosenWeapon) || chosenWeapon > this.weapons.length - 1) {
+
+        chosenWeapon = io.input("Weapon: ");
+
+      }
+
+      let damage = Math.floor(Math.random() * this.weapons[chosenWeapon].maxDamage + 1);
+
+      this.weapons[chosenWeapon].uses--;
+
+      if (this.weapons[chosenWeapon].uses <= 0) {
+
+        this.weapons[chosenWeapon].uses = 0;
+        damage = 1;
+
+      }
+
+      console.log();
+
+      return opponent.takeDamage(damage);
 
     }
 
-    let chosenWeapon = -1;
+    else {
 
-    while (chosenWeapon == -1 || isNaN(chosenWeapon) || chosenWeapon > this.weapons.length - 1) {
-
-      chosenWeapon = io.input("Weapon: ");
-
-    }
-
-    let damage = Math.floor(Math.random() * this.weapons[chosenWeapon].maxDamage + 1);
-
-    this.weapons[chosenWeapon].uses--;
-
-    if (this.weapons[chosenWeapon].uses <= 0) {
-
-      this.weapons[chosenWeapon].uses = 0;
-      damage = 1;
+      console.log(`${this.name} is stunned!`);
+      return false;
 
     }
-
-    io.output("");
-
-    return opponent.takeDamage(damage);
 
   }
 
@@ -290,7 +377,9 @@ function battle(hero, villian) {
 
     if (turn === 1) { // Hero's turn
 
-      let victory = hero.attack(villian);
+      let victory = false;
+
+      victory = hero.attack(villian);
 
       if (victory) {
 
@@ -307,7 +396,9 @@ function battle(hero, villian) {
 
     else { // Villian's turn
 
-      let victory = villian.attack(hero);
+      let victory = false;
+
+      victory = villian.attack(hero);
 
       if (victory) {
 
