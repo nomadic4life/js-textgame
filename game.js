@@ -91,6 +91,49 @@ class Fighter extends Humanoid {
 
   }
 
+  // extension of takeDamage function
+
+  takeDamage(damage) {
+
+    // If I am not afflicted with anything, then there is a 5% chance I will be stunned and a 10% chance I will be poisoned.
+
+    if (this.status == "NORMAL") {
+
+      const affliction = Math.floor(Math.random() * 100 + 1);
+
+      if (affliction < 5) {
+
+        this.setStatus("STUNNED", 1);
+
+      }
+
+      else if (affliction < 15) {
+
+        this.setStatus("POISONED", Math.floor(Math.random() * 4 + 1));
+
+      }
+
+    }
+
+    if (this.status == "POISONED") {
+
+      let damage = Math.floor(Math.random() * 9 + 1);
+      console.log(`${this.name} took ${damage} damage due to poison.`);
+
+      this.hp -= damage;
+      console.log(`${this.name}'s current HP: ${this.hp}`);
+
+      this.statusTime--;
+
+      if (this.statusTime == 0)
+        this.status = "NORMAL";
+
+    }
+
+    return super.takeDamage(damage);
+
+  }
+
   // Attacks an opponent. Opponent must also be derivative of Fighter class. Returns whether attack resulted in a kill or not.
 
   attack(opponent) {
@@ -123,8 +166,8 @@ class Fighter extends Humanoid {
 
     */
 
-    status = newStatus;
-    statusTime = time;
+    this.status = newStatus;
+    this.statusTime = time;
 
   }
 
