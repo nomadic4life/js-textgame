@@ -136,11 +136,10 @@ class Fighter extends Humanoid {
 
   // Attacks an opponent. Opponent must also be derivative of Fighter class. Returns whether attack resulted in a kill or not.
 
-  attack(opponent) {
+  attack(opponent, weapon) {
 
     if (this.status != "STUNNED") {
 
-      let weapon = Math.floor(Math.random() * this.weapons.length);
       let damage = Math.floor(Math.random() * this.weapons[weapon].maxDamage + 1);
 
       this.weapons[weapon].uses--;
@@ -184,6 +183,26 @@ class Fighter extends Humanoid {
 
 }
 
+// Villian class, inherits from Fighter
+
+class Villian extends Fighter {
+
+  constructor(obj) {
+
+    super(obj);
+
+  }
+
+  // Chooses a weapon to use
+
+  chooseWeapon() {
+
+    return Math.floor(Math.random() * this.weapons.length);
+
+  }
+
+}
+
 // Hero class, inherits from Fighter
 
 class Hero extends Fighter {
@@ -194,51 +213,27 @@ class Hero extends Fighter {
 
   }
 
-  // Attacks opponent. Same as Fighter attack function overridden with input.
+  // Chooses a weapon. Set up for input.
 
-  attack(opponent) {
+  chooseWeapon() {
 
-    if (this.status != "STUNNED") {
+    io.output("Choose your weapon by entering in the number of the weapon:");
 
-      io.output("Choose your weapon by entering in the number of the weapon:");
+    for (let i = 0; i < this.weapons.length; i++) {
 
-      for (let i = 0; i < this.weapons.length; i++) {
-
-        io.output(`[${i}] ${this.weapons[i].name} (remaining uses: ${this.weapons[i].uses})`);
-
-      }
-
-      let chosenWeapon = -1;
-
-      while (chosenWeapon == -1 || isNaN(chosenWeapon) || chosenWeapon > this.weapons.length - 1) {
-
-        chosenWeapon = io.input("Weapon: ");
-
-      }
-
-      let damage = Math.floor(Math.random() * this.weapons[chosenWeapon].maxDamage + 1);
-
-      this.weapons[chosenWeapon].uses--;
-
-      if (this.weapons[chosenWeapon].uses <= 0) {
-
-        this.weapons[chosenWeapon].uses = 0;
-        damage = 1;
-
-      }
-
-      console.log();
-
-      return opponent.takeDamage(damage);
+      io.output(`[${i}] ${this.weapons[i].name} (remaining uses: ${this.weapons[i].uses})`);
 
     }
 
-    else {
+    let chosenWeapon = -1;
 
-      console.log(`${this.name} is stunned!`);
-      return false;
+    while (chosenWeapon == -1 || isNaN(chosenWeapon) || chosenWeapon > this.weapons.length - 1) {
+
+      chosenWeapon = io.input("Weapon: ");
 
     }
+
+    return chosenWeapon;
 
   }
 
@@ -379,7 +374,9 @@ function battle(hero, villian) {
 
       let victory = false;
 
-      victory = hero.attack(villian);
+      let weapon = hero.chooseWeapon();
+
+      victory = hero.attack(villian, weapon);
 
       if (victory) {
 
@@ -398,7 +395,9 @@ function battle(hero, villian) {
 
       let victory = false;
 
-      victory = villian.attack(hero);
+      let weapon = villian.chooseWeapon();
+
+      victory = villian.attack(hero, weapon);
 
       if (victory) {
 
@@ -430,7 +429,7 @@ let fighting = true;
 
 while (fighting) {
 
-  let myVillian = new Fighter({
+  let myVillian = new Villian({
     createdAt: new Date(),
     dimensions: {
       length: 1,
