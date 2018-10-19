@@ -138,19 +138,30 @@ class Fighter extends Humanoid {
 
   attack(opponent) {
 
-    let weapon = Math.floor(Math.random() * this.weapons.length);
-    let damage = Math.floor(Math.random() * this.weapons[weapon].maxDamage + 1);
+    if (this.status != "STUNNED") {
 
-    this.weapons[weapon].uses--;
+      let weapon = Math.floor(Math.random() * this.weapons.length);
+      let damage = Math.floor(Math.random() * this.weapons[weapon].maxDamage + 1);
 
-    if (this.weapons[weapon].uses <= 0) {
+      this.weapons[weapon].uses--;
 
-      this.weapons[weapon].uses = 0;
-      damage = 1;
+      if (this.weapons[weapon].uses <= 0) {
+
+        this.weapons[weapon].uses = 0;
+        damage = 1;
+
+      }
+
+      return opponent.takeDamage(damage);
 
     }
 
-    return opponent.takeDamage(damage);
+    else {
+
+      console.log(`${this.name} is stunned!`);
+      return false;
+
+    }
 
   }
 
@@ -187,36 +198,47 @@ class Hero extends Fighter {
 
   attack(opponent) {
 
-    console.log("Choose your weapon by entering in the number of the weapon:");
+    if (this.status != "STUNNED") {
 
-    for (let i = 0; i < this.weapons.length; i++) {
+      console.log("Choose your weapon by entering in the number of the weapon:");
 
-      console.log(`[${i}] ${this.weapons[i].name} (remaining uses: ${this.weapons[i].uses})`);
+      for (let i = 0; i < this.weapons.length; i++) {
+
+        console.log(`[${i}] ${this.weapons[i].name} (remaining uses: ${this.weapons[i].uses})`);
+
+      }
+
+      let chosenWeapon = -1;
+
+      while (chosenWeapon == -1 || isNaN(chosenWeapon) || chosenWeapon > this.weapons.length - 1) {
+
+        chosenWeapon = readline.question("Weapon: ");
+
+      }
+
+      let damage = Math.floor(Math.random() * this.weapons[chosenWeapon].maxDamage + 1);
+
+      this.weapons[chosenWeapon].uses--;
+
+      if (this.weapons[chosenWeapon].uses <= 0) {
+
+        this.weapons[chosenWeapon].uses = 0;
+        damage = 1;
+
+      }
+
+      console.log();
+
+      return opponent.takeDamage(damage);
 
     }
 
-    let chosenWeapon = -1;
+    else {
 
-    while (chosenWeapon == -1 || isNaN(chosenWeapon) || chosenWeapon > this.weapons.length - 1) {
-
-      chosenWeapon = readline.question("Weapon: ");
-
-    }
-
-    let damage = Math.floor(Math.random() * this.weapons[chosenWeapon].maxDamage + 1);
-
-    this.weapons[chosenWeapon].uses--;
-
-    if (this.weapons[chosenWeapon].uses <= 0) {
-
-      this.weapons[chosenWeapon].uses = 0;
-      damage = 1;
+      console.log(`${this.name} is stunned!`);
+      return false;
 
     }
-
-    console.log();
-
-    return opponent.takeDamage(damage);
 
   }
 
@@ -316,15 +338,7 @@ function battle(hero, villian) {
 
       let victory = false;
 
-      if (hero.status != "STUNNED")
-        victory = hero.attack(villian);
-
-      else {
-
-        console.log(`${hero.name} is stunned!`);
-        hero.statusTime--;
-
-      }
+      victory = hero.attack(villian);
 
       if (victory) {
 
@@ -343,15 +357,7 @@ function battle(hero, villian) {
 
       let victory = false;
 
-      if (villian.status != "STUNNED")
-        victory = villian.attack(hero);
-
-      else {
-
-        console.log(`${villian.name} is stunned!`);
-        villian.statusTime--;
-
-      }
+      victory = villian.attack(hero);
 
       if (victory) {
 
