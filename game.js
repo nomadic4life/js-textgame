@@ -19,7 +19,7 @@ class GameObject {
 
   destroy() {
 
-    io.output(`${this.name} was removed from the game.`);
+    console.log(`${this.name} was removed from the game.`);
 
   }
 
@@ -41,11 +41,11 @@ class Entity extends GameObject {
 
   takeDamage(damage) {
 
-     io.output(`${this.name} took damage.`);
-     this.hp -= damage;
-     io.output(`${this.name}'s current HP: ${this.hp}`);
+    console.log(`${this.name} took damage.`);
+    this.hp -= damage;
+    console.log(`${this.name}'s current HP: ${this.hp}`);
 
-     return this.hp <= 0;
+    return this.hp <= 0;
 
   }
 
@@ -68,7 +68,7 @@ class Humanoid extends Entity {
 
   greet() {
 
-    io.output(`${this.name} offers a greeting in ${this.language}`);
+    console.log(`${this.name} offers a greeting in ${this.language}`);
 
   }
 
@@ -84,120 +84,25 @@ class Fighter extends Humanoid {
 
     super(obj);
 
-    // Status: Status of fighter
-    this.status = "NORMAL";
-    // statusTime: Number of turns fighter is affected by status
-    this.statusTime = 0;
-
-  }
-
-  // extension of takeDamage function
-
-  takeDamage(damage) {
-
-    // If I am not afflicted with anything, then there is a 5% chance I will be stunned and a 10% chance I will be poisoned.
-
-    if (this.status == "NORMAL") {
-
-      const affliction = Math.floor(Math.random() * 100 + 1);
-
-      if (affliction < 5) {
-
-        this.setStatus("STUNNED", 1);
-
-      }
-
-      else if (affliction < 15) {
-
-        this.setStatus("POISONED", Math.floor(Math.random() * 4 + 1));
-
-      }
-
-    }
-
-    if (this.status == "POISONED") {
-
-      let damage = Math.floor(Math.random() * 9 + 1);
-      console.log(`${this.name} took ${damage} damage due to poison.`);
-
-      this.hp -= damage;
-      console.log(`${this.name}'s current HP: ${this.hp}`);
-
-      this.statusTime--;
-
-      if (this.statusTime == 0)
-        this.status = "NORMAL";
-
-    }
-
-    return super.takeDamage(damage);
-
   }
 
   // Attacks an opponent. Opponent must also be derivative of Fighter class. Returns whether attack resulted in a kill or not.
 
-  attack(opponent, weapon) {
+  attack(opponent) {
 
-    if (this.status != "STUNNED") {
+    let weapon = Math.floor(Math.random() * this.weapons.length);
+    let damage = Math.floor(Math.random() * this.weapons[weapon].maxDamage + 1);
 
-      let damage = Math.floor(Math.random() * this.weapons[weapon].maxDamage + 1);
+    this.weapons[weapon].uses--;
 
-      this.weapons[weapon].uses--;
+    if (this.weapons[weapon].uses <= 0) {
 
-      if (this.weapons[weapon].uses <= 0) {
-
-        this.weapons[weapon].uses = 0;
-        damage = 1;
-
-      }
-
-      return opponent.takeDamage(damage);
+      this.weapons[weapon].uses = 0;
+      damage = 1;
 
     }
 
-    else {
-
-      io.output(`${this.name} is stunned!`);
-      return false;
-
-    }
-
-  }
-
-  setStatus(newStatus, time) {
-
-    /*
-
-    Possible statuses:
-
-    "NORMAL": normal
-    "STUNNED": cannot attack for n turns
-    "POISONED": Takes damage a bit for n turns
-
-    */
-
-    this.status = newStatus;
-    this.statusTime = time;
-
-  }
-
-}
-
-// Villian class, inherits from Fighter
-
-class Villian extends Fighter {
-
-  constructor(obj) {
-
-    super(obj);
-
-  }
-
-  // Chooses a weapon to use
-
-  chooseWeapon() {
-
-    return Math.floor(Math.random() * this.weapons.length);
+    return opponent.takeDamage(damage);
 
   }
 
@@ -213,15 +118,15 @@ class Hero extends Fighter {
 
   }
 
-  // Chooses a weapon. Set up for input.
+  // Attacks opponent. Same as Fighter attack function overridden with input.
 
-  chooseWeapon() {
+  attack(opponent) {
 
-    io.output("Choose your weapon by entering in the number of the weapon:");
+    console.log("Choose your weapon by entering in the number of the weapon:");
 
     for (let i = 0; i < this.weapons.length; i++) {
 
-      io.output(`[${i}] ${this.weapons[i].name} (remaining uses: ${this.weapons[i].uses})`);
+      console.log(`[${i}] ${this.weapons[i].name} (remaining uses: ${this.weapons[i].uses})`);
 
     }
 
@@ -229,56 +134,28 @@ class Hero extends Fighter {
 
     while (chosenWeapon == -1 || isNaN(chosenWeapon) || chosenWeapon > this.weapons.length - 1) {
 
-      chosenWeapon = io.input("Weapon: ");
+      chosenWeapon = readline.question("Weapon: ");
 
     }
 
-    return chosenWeapon;
+    let damage = Math.floor(Math.random() * this.weapons[chosenWeapon].maxDamage + 1);
+
+    this.weapons[chosenWeapon].uses--;
+
+    if (this.weapons[chosenWeapon].uses <= 0) {
+
+      this.weapons[chosenWeapon].uses = 0;
+      damage = 1;
+
+    }
+
+    console.log();
+
+    return opponent.takeDamage(damage);
 
   }
 
 }
-
-// IO class, used for processing IO
-
-class IO {
-
-  constructor(ioType) {
-
-    this.ioType = ioType;
-
-  }
-
-  // io.outputs a string
-  output(str) {
-
-    if (this.ioType == "console")
-      console.log(str);
-
-    else {
-
-      // Put io.output to DOM code here
-
-    }
-
-  }
-
-  input(str) {
-
-    if (this.ioType == "console")
-      return readline.question(str);
-
-    else {
-
-      // put input from DOM here
-
-    }
-
-  }
-
-}
-
-let io = new IO("console");
 
 /* ====================== GAME FUNCTIONS ============================ */
 
@@ -288,24 +165,24 @@ function createCharacter() {
 
   const characterClasses = ["Elf", "Human", "Orc"];
 
-  let heroName = io.input("What will your hero's name be? ");
+  let heroName = readline.question("What will your hero's name be? ");
 
   let characterClass = -1;
   let heroFaction = "undefined";
   let heroLanguage = "undefined";
 
-  io.output(`\nThere are ${characterClasses.length} classes available to you as an adventurer.`);
-  io.output("You may choose one of the following:\n");
+  console.log(`\nThere are ${characterClasses.length} classes available to you as an adventurer.`);
+  console.log("You may choose one of the following:\n");
 
   for (let i = 0; i < characterClasses.length; i++) {
 
-    io.output(`[${i}]: ${characterClasses[i]}`);
+    console.log(`[${i}]: ${characterClasses[i]}`);
 
   }
 
   while (characterClass == -1 || isNaN(characterClass) || characterClass > characterClasses.length - 1) {
 
-    characterClass = io.input("\nWhich class do you choose? ");
+    characterClass = readline.question("\nWhich class do you choose? ");
 
   }
 
@@ -328,7 +205,7 @@ function createCharacter() {
 
   }
 
-  io.output(`Welcome to the ${heroFaction}, ${heroName}.\n`);
+  console.log(`Welcome to the ${heroFaction}, ${heroName}.\n`);
 
   return new Hero({
     createdAt: new Date(),
@@ -341,8 +218,8 @@ function createCharacter() {
     name: heroName,
     faction: heroFaction,
     weapons: [
-      {name: "Dagger", maxDamage: 20, uses: 25},
-      {name: "Sword", maxDamage: 75, uses: 5}
+      { name: "Dagger", maxDamage: 20, uses: 25 },
+      { name: "Sword", maxDamage: 75, uses: 5 }
     ],
     language: heroLanguage,
   });
@@ -354,7 +231,7 @@ function createCharacter() {
 function battle(hero, villian) {
 
   // Introductions
-  io.output("");
+  console.log();
   hero.greet();
   villian.greet();
 
@@ -365,23 +242,19 @@ function battle(hero, villian) {
   // Game loop
   while (battling) {
 
-    io.output("");
-    io.output(`Your HP: ${hero.hp}`);
-    io.output(`Enemy HP: ${villian.hp}`);
-    io.output("");
+    console.log();
+    console.log(`Your HP: ${hero.hp}`);
+    console.log(`Enemy HP: ${villian.hp}`);
+    console.log();
 
     if (turn === 1) { // Hero's turn
 
-      let victory = false;
-
-      let weapon = hero.chooseWeapon();
-
-      victory = hero.attack(villian, weapon);
+      let victory = hero.attack(villian);
 
       if (victory) {
 
         villian.destroy();
-        io.output(`${hero.name} has won!\n`);
+        console.log(`${hero.name} has won!\n`);
         battling = false;
         return true;
 
@@ -393,16 +266,12 @@ function battle(hero, villian) {
 
     else { // Villian's turn
 
-      let victory = false;
-
-      let weapon = villian.chooseWeapon();
-
-      victory = villian.attack(hero, weapon);
+      let victory = villian.attack(hero);
 
       if (victory) {
 
         hero.destroy();
-        io.output(`${villian.name} has won!\n`);
+        console.log(`${villian.name} has won!\n`);
         battling = false;
         return false;
 
@@ -418,18 +287,18 @@ function battle(hero, villian) {
 
 /* ====================== THE GAME ============================ */
 
-io.output("Welcome to my game. Please create a character.\n");
+console.log("Welcome to my game. Please create a character.\n");
 
 const hero = createCharacter();
 
-io.output("Fight until you die!");
+console.log("Fight until you die!");
 
 let numVictories = 0;
 let fighting = true;
 
 while (fighting) {
 
-  let myVillian = new Villian({
+  let myVillian = new Fighter({
     createdAt: new Date(),
     dimensions: {
       length: 1,
@@ -440,8 +309,8 @@ while (fighting) {
     name: 'Evil Villian',
     faction: 'Mountain Kingdom',
     weapons: [
-      {name: "Dagger", maxDamage: 20, uses: 25},
-      {name: "Sword", maxDamage: 30, uses: 2}
+      { name: "Dagger", maxDamage: 20, uses: 25 },
+      { name: "Sword", maxDamage: 30, uses: 2 }
     ],
     language: 'Pig Latin',
   });
@@ -451,7 +320,7 @@ while (fighting) {
   if (fighting) {
 
     numVictories++;
-    io.output(`Great work, ${hero.name}! Your HP has been restored by ${20 + Math.floor(numVictories / 2) * 30} points. Now onto the next villian!`);
+    console.log(`Great work, ${hero.name}! Your HP has been restored by ${20 + Math.floor(numVictories / 2) * 30} points. Now onto the next villian!`);
     hero.hp += 20 + Math.floor(numVictories / 3) * 4;
     hero.weapons[0].uses += 5;
 
@@ -462,4 +331,4 @@ while (fighting) {
 
 }
 
-io.output(`Great job, ${hero.name}. You have successfully slain ${numVictories} villians.`);
+console.log(`Great job, ${hero.name}. You have successfully slain ${numVictories} villians.`);
